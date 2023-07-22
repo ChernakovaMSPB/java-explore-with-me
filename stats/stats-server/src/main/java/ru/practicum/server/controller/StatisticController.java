@@ -16,10 +16,11 @@ import java.util.List;
 @Validated
 public class StatisticController {
     private final StatisticService statisticService;
+    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     @GetMapping("/stats")
-    public List<ViewStatsDto> getStats(@RequestParam(name = "start") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
-                                       @RequestParam(name = "end") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
+    public List<ViewStatsDto> getStats(@RequestParam(name = "start") @DateTimeFormat(pattern = DATE_TIME_FORMAT) LocalDateTime start,
+                                       @RequestParam(name = "end") @DateTimeFormat(pattern = DATE_TIME_FORMAT) LocalDateTime end,
                                        @RequestParam(name = "uris", required = false) List<String> uris,
                                        @RequestParam(name = "unique", required = false, defaultValue = "false") Boolean unique) {
         return statisticService.getStats(start, end, uris, unique);
