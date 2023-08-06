@@ -27,6 +27,9 @@ public class StatisticServiceImpl implements StatisticService {
        if (start == null) {
            throw new BadRequestException("");
        }
+       if (start.isAfter(end)) {
+           throw new BadRequestException("");
+       }
         if (unique) {
             if (uris == null || uris.isEmpty()) {
                 result = statisticRepository.findAllUniqueWhenUriIsEmpty(start, end);
