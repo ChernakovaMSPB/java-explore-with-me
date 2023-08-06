@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.stats.dto.EndpointHitDto;
 import ru.practicum.stats.dto.ViewStatsDto;
+import ru.practicum.stats.server.exception.BadRequestException;
 import ru.practicum.stats.server.mapper.StatisticMapper;
 import ru.practicum.stats.server.model.EndpointHit;
 import ru.practicum.stats.server.repository.StatisticRepository;
@@ -22,7 +23,10 @@ public class StatisticServiceImpl implements StatisticService {
     @Override
     @Transactional(readOnly = true)
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
-        List<ViewStatsDto> result;
+       List<ViewStatsDto> result;
+       if (start == null) {
+           throw new BadRequestException("");
+       }
         if (unique) {
             if (uris == null || uris.isEmpty()) {
                 result = statisticRepository.findAllUniqueWhenUriIsEmpty(start, end);
