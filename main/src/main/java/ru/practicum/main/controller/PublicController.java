@@ -33,6 +33,7 @@ public class PublicController {
     private final CategoryService categoryService;
     private final CompilationService compilationService;
     private final EventService eventService;
+    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     @GetMapping("/categories")
     public List<CategoryDto> getCategories(@PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
@@ -61,8 +62,8 @@ public class PublicController {
     public List<EventShortDto> getEvents(@RequestParam(name = "text", required = false) String text,
                                          @RequestParam(name = "categories", required = false) List<Long> categories,
                                          @RequestParam(name = "paid", required = false) Boolean paid,
-                                         @RequestParam(name = "rangeStart", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
-                                         @RequestParam(name = "rangeEnd", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
+                                         @RequestParam(name = "rangeStart", required = false) @DateTimeFormat(pattern = DATE_TIME_FORMAT) LocalDateTime rangeStart,
+                                         @RequestParam(name = "rangeEnd", required = false) @DateTimeFormat(pattern = DATE_TIME_FORMAT) LocalDateTime rangeEnd,
                                          @RequestParam(name = "onlyAvailable", required = false, defaultValue = "false") Boolean onlyAvailable,
                                          @RequestParam(name = "sort", required = false) String sort,
                                          @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
@@ -71,7 +72,7 @@ public class PublicController {
         SortParam sortParam = null;
         if (sort != null) {
             sortParam = SortParam.from(sort)
-                    .orElseThrow(() -> new ValidationException("Unknown sort parameter: " + sort));
+                    .orElseThrow(() -> new ValidationException(String.format("Unknown sort parameter %s", sort)));
         }
         String ip = request.getRemoteAddr();
         String path = request.getRequestURI();

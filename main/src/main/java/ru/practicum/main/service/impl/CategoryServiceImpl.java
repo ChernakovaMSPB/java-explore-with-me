@@ -68,9 +68,10 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional(readOnly = true)
     public Category findCategoryById(Long id) {
-        return categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Category " + id + " is not found"));
+        return categoryRepository.findById(id).orElseThrow(() -> new NotFoundException(String.format("Category %s is not found",id)));
     }
 
+    @Transactional(readOnly = true)
     public boolean checkCategoryName(CategoryDto categoryDto) {
         Category category = categoryRepository.findCategoryByName(categoryDto.getName());
         if (category == null) {
