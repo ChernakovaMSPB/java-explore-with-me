@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.main.dto.*;
+import ru.practicum.main.service.CommentsService;
 import ru.practicum.main.service.EventService;
 import ru.practicum.main.service.RequestService;
 
@@ -23,6 +24,7 @@ import java.util.List;
 public class PrivateController {
     private final EventService eventService;
     private final RequestService requestService;
+    private final CommentsService commentsService;
 
     @GetMapping("/{userId}/events")
     public List<EventShortDto> getEventsOfUser(@PathVariable Long userId,
@@ -80,5 +82,27 @@ public class PrivateController {
     @PatchMapping("/{userId}/requests/{requestId}/cancel")
     public ParticipationRequestDto cancelRequest(@PathVariable Long userId, @PathVariable Long requestId) {
         return requestService.cancelRequest(userId, requestId);
+    }
+
+    @PostMapping("/{userId}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommentsDto createNewComment(@PathVariable Long userId,
+                                        @RequestParam(name = "eventId") String eventId,
+                                        @RequestBody @Valid NewCommentsDto commentsDto) {
+        return commentsService.createNewComment(userId, Long.parseLong(eventId), commentsDto);
+    }
+
+    @PatchMapping("{userId}/comments/{commentId}")
+    public CommentsDto updateCommentByUser(@PathVariable Long userId,
+                                           @PathVariable Long commentId,
+                                           @RequestBody NewCommentsDto commentsDto) {
+        return commentsService.updateCommentByUser(userId, commentId, commentsDto);
+    }
+
+    @DeleteMapping("{userId}/comments/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCommentByUser(@PathVariable Long userId,
+                                    @PathVariable Long commentId) {
+        commentsService.deleteCommentByUser(userId, commentId);
     }
 }

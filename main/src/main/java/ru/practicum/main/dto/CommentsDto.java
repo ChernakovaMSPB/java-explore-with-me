@@ -7,22 +7,15 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class EventShortDto {
+public class CommentsDto {
     Long id;
-    String description;
-    String annotation;
-    CategoryDto category;
-    Long confirmedRequests;
+    String text;
+    String author;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    LocalDateTime eventDate;
-    UserShortDto initiator;
-    Boolean paid;
-    String title;
-    Long views;
-    List<CommentsDto> comments;
+    LocalDateTime created;
+
 }

@@ -8,10 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.main.dto.*;
 import ru.practicum.main.model.enums.EventState;
-import ru.practicum.main.service.CategoryService;
-import ru.practicum.main.service.CompilationService;
-import ru.practicum.main.service.EventService;
-import ru.practicum.main.service.UserService;
+import ru.practicum.main.service.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -28,6 +25,7 @@ public class AdminController {
     private final UserService userService;
     private final CompilationService compilationService;
     private final EventService eventService;
+    private final CommentsService commentsService;
     private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     @PostMapping("/categories")
@@ -97,6 +95,21 @@ public class AdminController {
     @PatchMapping("/events/{eventId}")
     public EventFullDto updateEvent(@PathVariable Long eventId, @RequestBody @Valid UpdateEventAdminRequest updateEventAdminRequest) {
         return eventService.updateEvent(eventId, updateEventAdminRequest);
+    }
+
+    @GetMapping("/search")
+    public List<CommentsDto> search(@RequestParam(value = "text", required = false) String text,
+                                    @RequestParam(name = "rangeStart") @DateTimeFormat(pattern = DATE_TIME_FORMAT) LocalDateTime rangeStart,
+                                    @RequestParam(name = "rangeEnd") @DateTimeFormat(pattern = DATE_TIME_FORMAT) LocalDateTime rangeEnd,
+                                    @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+                                    @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
+        return commentsService.search(text, rangeStart, rangeEnd, PageRequest.of(from / size, size));
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteComment(@PathVariable Long commentId) {
+        commentsService.deleteComment(commentId);
     }
 }
 

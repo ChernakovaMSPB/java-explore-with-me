@@ -11,8 +11,10 @@ import ru.practicum.main.dto.*;
 import ru.practicum.main.exception.BadRequestException;
 import ru.practicum.main.exception.NotFoundException;
 import ru.practicum.main.exception.ValidationException;
+import ru.practicum.main.mappers.CommentsMapper;
 import ru.practicum.main.mappers.EventMapper;
 import ru.practicum.main.model.Category;
+import ru.practicum.main.model.Comments;
 import ru.practicum.main.model.Event;
 import ru.practicum.main.model.User;
 import ru.practicum.main.model.enums.EventState;
@@ -20,6 +22,7 @@ import ru.practicum.main.model.enums.SortParam;
 import ru.practicum.main.model.enums.StateAction;
 import ru.practicum.main.model.enums.StateActionAdmin;
 import ru.practicum.main.repository.CategoryRepository;
+import ru.practicum.main.repository.CommentsRepository;
 import ru.practicum.main.repository.EventRepository;
 import ru.practicum.main.repository.UserRepository;
 import ru.practicum.main.service.EventService;
@@ -28,6 +31,7 @@ import ru.practicum.stats.client.StatisticClient;
 import ru.practicum.stats.dto.EndpointHitDto;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -39,18 +43,26 @@ public class EventServiceImpl implements EventService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final StatisticClient statisticClient;
+    private final CommentsMapper commentsMapper;
+    private final CommentsRepository commentsRepository;
 
     @Override
     @Transactional(readOnly = true)
     public List<EventFullDto> getEvents(List<Long> users, List<EventState> states, List<Long> categories, LocalDateTime rangeStart, LocalDateTime rangeEnd, Pageable pageable) {
         Collection<Event> events;
+        List<EventFullDto> eventsForAdmin = new ArrayList<>();
+        List<CommentsDto> comments;
         Specification<Event> specification = EventSpecifications.getFilteredEventsForAdmin(users, states, categories, rangeStart, rangeEnd);
         Page<Event> eventPage = repository.findAll(specification, pageable);
         if (eventPage.isEmpty()) {
             throw new BadRequestException("Not events.");
         }
         events = eventPage.getContent();
-        return mapper.toEventFullDto(events);
+        for (Event event : events) {
+            comments = getComments(event);
+            eventsForAdmin.add(mapper.toEventFullDto(event, comments));
+        }
+        return eventsForAdmin;
     }
 
     @Override
@@ -108,8 +120,14 @@ public class EventServiceImpl implements EventService {
         if (!event.getState().equals(EventState.PUBLISHED)) {
             throw new NotFoundException("Event not publich.");
         }
+        List<CommentsDto> comments = getComments(event);
         event.setViews(event.getViews() + 1);
-        return mapper.toEventFullDto(event);
+        return mapper.toEventFullDto(event, comments);
+    }
+
+    private List<CommentsDto> getComments(Event event) {
+        List<Comments> comments = commentsRepository.findAllByEvent_Id(event.getId());
+        return commentsMapper.toCommentsDtoCollection(comments);
     }
 
     private void saveHit(String ip, String path) {
@@ -125,6 +143,8 @@ public class EventServiceImpl implements EventService {
     @Transactional(readOnly = true)
     public List<EventShortDto> getPublishedEvents(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd, Boolean onlyAvailable, SortParam sort, Pageable pageable, String ip, String path) {
         Collection<Event> events;
+        List<EventShortDto> publishedEvents = new ArrayList<>();
+        List<CommentsDto> comments;
 
         Specification<Event> specification = EventSpecifications.getFilteredEvents(text, categories, paid, rangeStart, rangeEnd, sort, EventState.PUBLISHED, onlyAvailable);
         Page<Event> eventPage = repository.findAll(specification, pageable);
@@ -135,15 +155,23 @@ public class EventServiceImpl implements EventService {
         saveHit(ip, path);
         for (Event event : events) {
             event.setViews(event.getViews() + 1);
+            comments = getComments(event);
+            publishedEvents.add(mapper.toEventShortDto(event, comments));
         }
-        return mapper.toEventShortDto(events);
+        return publishedEvents;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<EventShortDto> getEventsOfUser(Long userId, Pageable pageable) {
         Collection<Event> events = repository.findAllByInitiator_Id(userId, pageable);
-        return mapper.toEventShortDto(events);
+        List<EventShortDto> eventsOfUser = new ArrayList<>();
+        List<CommentsDto> comments;
+        for (Event event : events) {
+            comments = getComments(event);
+            eventsOfUser.add(mapper.toEventShortDto(event, comments));
+        }
+        return eventsOfUser;
     }
 
     @Override
