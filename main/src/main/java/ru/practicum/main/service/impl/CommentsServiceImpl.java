@@ -42,7 +42,7 @@ public class CommentsServiceImpl implements CommentsService {
             event = eventRepository.findEventByIdAndAndState(eventId, EventState.PENDING);
         }
 
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User is not found. Only registered user can add comment"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.format("User with id %d is not found. Only registered user can add comment", userId)));
         Comments comments = new Comments();
         comments.setCreated(LocalDateTime.now());
         comments.setEvent(event);
@@ -55,9 +55,9 @@ public class CommentsServiceImpl implements CommentsService {
     @Override
     @Transactional
     public void deleteCommentByUser(Long userId, Long commentId) {
-        Comments comments = repository.findById(commentId).orElseThrow(() -> new NotFoundException("Comment is not found"));
+        Comments comments = repository.findById(commentId).orElseThrow(() -> new NotFoundException(String.format("Comment with id %d is not found", commentId)));
         if (!comments.getAuthor().getId().equals(userId)) {
-            throw new ValidationException("Only author of the comment can delete it");
+            throw new ValidationException(String.format("Only author with id %d of the comment can delete it", userId));
         }
         repository.deleteById(commentId);
     }
@@ -65,9 +65,9 @@ public class CommentsServiceImpl implements CommentsService {
     @Override
     @Transactional
     public CommentsDto updateCommentByUser(Long userId, Long commentId, NewCommentsDto commentsDto) {
-        Comments comments = repository.findById(commentId).orElseThrow(() -> new NotFoundException("Comment is not found"));
+        Comments comments = repository.findById(commentId).orElseThrow(() -> new NotFoundException(String.format("Comment with id %d is not found", commentId)));
         if (!comments.getAuthor().getId().equals(userId)) {
-            throw new ValidationException("Only author of the comment can change it");
+            throw new ValidationException(String.format("Only author with id %d can change the comment", userId));
         }
         if (commentsDto.getText().isBlank()) {
             throw new ValidationException("Comment can not be blank");
@@ -91,7 +91,7 @@ public class CommentsServiceImpl implements CommentsService {
     @Override
     @Transactional
     public void deleteComment(Long comentId) {
-        repository.findById(comentId).orElseThrow(() -> new NotFoundException("Comment is not found"));
+        repository.findById(comentId).orElseThrow(() -> new NotFoundException(String.format("Comment with id %d is not found", comentId)));
         repository.deleteById(comentId);
     }
 }

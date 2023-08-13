@@ -25,35 +25,40 @@ public class PrivateController {
     private final EventService eventService;
     private final RequestService requestService;
     private final CommentsService commentsService;
+    private static final String USER_EVENTS_PATH = "/{userId}/events";
+    private static final String USER_EVENT_PATH = "/{userId}/events/{eventId}";
+    private static final String USER_REQUESTS_PATH = "/{userId}/requests";
+    private static final String USER_REQUEST_PATH = "/{userId}/events/{eventId}/requests";
+    private static final String USER_COMMENT_PATH = "/{userId}/comments/{commentId}";
 
-    @GetMapping("/{userId}/events")
+    @GetMapping(USER_EVENTS_PATH)
     public List<EventShortDto> getEventsOfUser(@PathVariable Long userId,
                                                @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
                                                @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         return eventService.getEventsOfUser(userId, PageRequest.of(from / size, size));
     }
 
-    @PostMapping("/{userId}/events")
+    @PostMapping(USER_EVENTS_PATH)
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto addEvent(@PathVariable Long userId,
                                  @RequestBody @Valid NewEventDto newEventDto) {
         return eventService.addEvent(userId, newEventDto);
     }
 
-    @GetMapping("/{userId}/events/{eventId}")
+    @GetMapping(USER_EVENT_PATH)
     public EventFullDto getEventOfUser(@PathVariable Long userId,
                                        @PathVariable Long eventId) {
         return eventService.getEventOfUser(userId, eventId);
     }
 
-    @PostMapping("/{userId}/requests")
+    @PostMapping(USER_REQUESTS_PATH)
     @ResponseStatus(HttpStatus.CREATED)
     public ParticipationRequestDto addParticipationRequest(@PathVariable Long userId,
                                                            @RequestParam(name = "eventId") String eventId) {
         return requestService.addParticipationRequest(userId, Long.parseLong(eventId));
     }
 
-    @PatchMapping("/{userId}/events/{eventId}")
+    @PatchMapping(USER_EVENT_PATH)
     public EventFullDto updateEventOfUser(@PathVariable Long userId,
                                           @PathVariable Long eventId,
                                           @RequestBody @Valid UpdateEventUserRequest updateEventUserRequest) {
@@ -61,20 +66,20 @@ public class PrivateController {
         return eventService.updateEventOfUser(userId, eventId, updateEventUserRequest);
     }
 
-    @GetMapping("/{userId}/events/{eventId}/requests")
+    @GetMapping(USER_REQUEST_PATH)
     public List<ParticipationRequestDto> getEventParticipants(@PathVariable Long userId,
                                                               @PathVariable Long eventId) {
         return requestService.getEventParticipants(userId, eventId);
     }
 
-    @PatchMapping("/{userId}/events/{eventId}/requests")
+    @PatchMapping(USER_REQUEST_PATH)
     public EventRequestStatusUpdateResult changeRequestStatus(@PathVariable Long userId,
                                                               @PathVariable Long eventId,
                                                               @RequestBody EventRequestStatusUpdateRequest statusUpdateRequest) {
         return requestService.changeRequestStatus(userId, eventId, statusUpdateRequest);
     }
 
-    @GetMapping("/{userId}/requests")
+    @GetMapping(USER_REQUESTS_PATH)
     public List<ParticipationRequestDto> getUserRequests(@PathVariable Long userId) {
         return requestService.getUserRequests(userId);
     }
@@ -92,14 +97,14 @@ public class PrivateController {
         return commentsService.createNewComment(userId, Long.parseLong(eventId), commentsDto);
     }
 
-    @PatchMapping("{userId}/comments/{commentId}")
+    @PatchMapping(USER_COMMENT_PATH)
     public CommentsDto updateCommentByUser(@PathVariable Long userId,
                                            @PathVariable Long commentId,
                                            @RequestBody NewCommentsDto commentsDto) {
         return commentsService.updateCommentByUser(userId, commentId, commentsDto);
     }
 
-    @DeleteMapping("{userId}/comments/{commentId}")
+    @DeleteMapping(USER_COMMENT_PATH)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCommentByUser(@PathVariable Long userId,
                                     @PathVariable Long commentId) {
