@@ -4,7 +4,6 @@ import org.mapstruct.*;
 import ru.practicum.main.dto.*;
 import ru.practicum.main.model.Event;
 
-import java.util.Collection;
 import java.util.List;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
@@ -18,11 +17,13 @@ public interface EventMapper {
     @Mapping(target = "participantLimit", defaultValue = "0L")
     EventFullDto toEventFullDto(Event event);
 
-    List<EventShortDto> toEventShortDto(Collection<Event> event);
-
     EventShortDto toEventShortDto(Event event);
 
-    List<EventFullDto> toEventFullDto(Collection<Event> event);
+    @Mapping(target = "id", source = "event.id")
+    EventFullDto toEventFullDto(Event event, List<CommentsDto> comments);
+
+    @Mapping(target = "id", source = "event.id")
+    EventShortDto toEventShortDto(Event event, List<CommentsDto> comments);
 
     @Mapping(target = "annotation", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "title", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

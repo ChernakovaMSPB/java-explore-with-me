@@ -7,6 +7,7 @@ import ru.practicum.main.model.enums.EventState;
 import ru.practicum.main.model.Location;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -31,5 +32,6 @@ public class EventFullDto {
     EventState state;
     String title;
     Long views;
+    List<CommentsDto> comments;
 }
 
